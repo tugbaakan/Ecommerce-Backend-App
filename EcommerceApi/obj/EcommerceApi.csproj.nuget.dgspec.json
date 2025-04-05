@@ -47,7 +47,7 @@
           "dependencies": {
             "DotNetEnv": {
               "target": "Package",
-              "version": "[3.1.1, )"
+              "version": "[2.5.0, )"
             },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
@@ -72,6 +72,10 @@
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
               "version": "[9.0.4, )"
+            },
+            "Serilog.Extensions.Logging.File": {
+              "target": "Package",
+              "version": "[3.0.0, )"
             },
             "StackExchange.Redis": {
               "target": "Package",

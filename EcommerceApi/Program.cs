@@ -33,6 +33,14 @@ if (missingVars.Any())
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure logging
+var logsPath = Path.Combine(Directory.GetCurrentDirectory(), "logs");
+Directory.CreateDirectory(logsPath); // Ensure logs directory exists
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddFile(Path.Combine(logsPath, "app-{Date}.log"));
+
 // Build connection strings from environment variables
 var postgresConnectionString = $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" +
                              $"Port={Environment.GetEnvironmentVariable("DB_PORT")};" +
