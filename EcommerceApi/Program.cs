@@ -62,12 +62,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp => 
     ConnectionMultiplexer.Connect(redisConnectionString));
 
-// Configure Redis cache timeout from environment
-builder.Services.Configure<RedisSettings>(options =>
-{
-    options.CacheTimeout = int.Parse(Environment.GetEnvironmentVariable("REDIS_CACHE_TIMEOUT") ?? "30");
-});
-
 // Add Redis Cache Service
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 
