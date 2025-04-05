@@ -82,27 +82,48 @@ The `PUT /api/customerOrders/{id}` endpoint allows you to modify an existing ord
 - .NET 8.0 SDK
 - PostgreSQL
 - Redis Server
+- DotNetEnv package (for .env file support)
 
 ## Setup
 
 1. Clone the repository
-2. Update the connection strings in `appsettings.json`:
-   ```json
-   {
-     "ConnectionStrings": {
-       "DefaultConnection": "Host=localhost;Database=ecommercedb;Username=your_username;Password=your_password;Port=5432",
-       "Redis": "localhost:6379"
-     }
-   }
+2. Install DotNetEnv package:
+   ```bash
+   dotnet add package DotNetEnv
    ```
-3. Run the database migrations:
+3. Create a `.env` file in the project root:
+   ```bash
+   cp .env.example .env
+   ```
+4. Edit the `.env` file with your configuration:
+   ```
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=ecommercedb
+   DB_USERNAME=your_database_username
+   DB_PASSWORD=your_database_password
+   REDIS_HOST=localhost
+   REDIS_PORT=6379
+   REDIS_CACHE_TIMEOUT=30
+   ```
+5. Run the database migrations:
    ```bash
    dotnet ef database update
    ```
-4. Run the application:
+6. Run the application:
    ```bash
    dotnet run
    ```
+
+## Security Notes
+
+- Never commit sensitive information like database credentials to version control
+- The `.env` file is included in `.gitignore` to prevent accidental commits
+- Use `.env.example` as a template for required environment variables
+- In production, consider using a secrets management service
+- Regularly rotate database credentials
+- Use strong, unique passwords for database access
+- Consider implementing IP whitelisting for database access
 
 ## Technologies Used
 

@@ -3,8 +3,44 @@ using EcommerceApi.Data;
 using StackExchange.Redis;
 using EcommerceApi.Services;
 using System.Text.Json.Serialization;
+using DotNetEnv;
+
+// Load .env file from the correct path
+var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+if (!File.Exists(envPath))
+{
+    throw new FileNotFoundException("The .env file is missing. Please create one based on .env.example");
+}
+Env.Load(envPath);
+
+// Validate required environment variables
+var requiredEnvVars = new[]
+{
+    "DB_HOST",
+    "DB_PORT",
+    "DB_NAME",
+    "DB_USERNAME",
+    "DB_PASSWORD",
+    "REDIS_HOST",
+    "REDIS_PORT"
+};
+
+var missingVars = requiredEnvVars.Where(var => string.IsNullOrEmpty(Environment.GetEnvironmentVariable(var))).ToList();
+if (missingVars.Any())
+{
+    throw new Exception($"Missing required environment variables: {string.Join(", ", missingVars)}");
+}
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Build connection strings from environment variables
+var postgresConnectionString = $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" +
+                             $"Port={Environment.GetEnvironmentVariable("DB_PORT")};" +
+                             $"Database={Environment.GetEnvironmentVariable("DB_NAME")};" +
+                             $"Username={Environment.GetEnvironmentVariable("DB_USERNAME")};" +
+                             $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")}";
+
+var redisConnectionString = $"{Environment.GetEnvironmentVariable("REDIS_HOST")}:{Environment.GetEnvironmentVariable("REDIS_PORT")}";
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -18,13 +54,19 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add DbContext
+// Add DbContext with environment variable connection string
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(postgresConnectionString));
 
-// Configure Redis
+// Configure Redis with environment variable connection string
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp => 
-    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
+    ConnectionMultiplexer.Connect(redisConnectionString));
+
+// Configure Redis cache timeout from environment
+builder.Services.Configure<RedisSettings>(options =>
+{
+    options.CacheTimeout = int.Parse(Environment.GetEnvironmentVariable("REDIS_CACHE_TIMEOUT") ?? "30");
+});
 
 // Add Redis Cache Service
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
