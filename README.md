@@ -10,6 +10,7 @@ A RESTful API for managing an e-commerce system with products, customers, and or
 - Redis caching for product data
 - Entity Framework Core for data persistence
 - PostgreSQL database
+- RabbitMQ for order notifications- PostgreSQL database
 
 ## API Endpoints
 
@@ -83,6 +84,7 @@ The `PUT /api/customerOrders/{id}` endpoint allows you to modify an existing ord
 - PostgreSQL
 - Redis Server
 - DotNetEnv package (for .env file support)
+- RabbitMQ
 
 ## Setup
 
@@ -105,6 +107,10 @@ The `PUT /api/customerOrders/{id}` endpoint allows you to modify an existing ord
    REDIS_HOST=localhost
    REDIS_PORT=6379
    REDIS_CACHE_TIMEOUT=30
+   RABBITMQ_HOST=localhost
+   RABBITMQ_PORT=5672
+   RABBITMQ_USER=guest
+   RABBITMQ_PASSWORD=guest
    ```
 5. Run the database migrations:
    ```bash
@@ -133,3 +139,35 @@ The `PUT /api/customerOrders/{id}` endpoint allows you to modify an existing ord
 - Redis
 - AutoMapper
 - Swagger/OpenAPI
+
+## Notification System
+
+The application uses RabbitMQ for sending order notifications:
+
+1. **Email Notifications**:
+   - Sent when an order is created
+   - Includes order details and confirmation
+
+2. **SMS Notifications**:
+   - Sent when an order is created
+   - Brief order confirmation message
+
+3. **Notification Storage**:
+   - Notifications are stored in the `notifications` directory
+   - Each notification is saved as a text file
+   - File naming format: `{type}_{orderId}_{timestamp}.txt`
+
+### RabbitMQ Setup
+
+1. Install RabbitMQ:
+   - Download and install from: https://www.rabbitmq.com/download.html
+   - Make sure Erlang is installed (required for RabbitMQ)
+
+2. Enable Management Plugin:
+   ```bash
+   rabbitmq-plugins enable rabbitmq_management
+   ```
+
+3. Access Management UI:
+   - URL: http://localhost:15672
+   - Default credentials: guest/guest

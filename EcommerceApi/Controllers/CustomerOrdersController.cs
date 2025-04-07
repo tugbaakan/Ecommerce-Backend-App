@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using EcommerceApi.Data;
 using EcommerceApi.Models;
 using EcommerceApi.Models.Dto;
+using Microsoft.Extensions.Logging;
+using EcommerceApi.Services;
 
 namespace EcommerceApi.Controllers;
 
@@ -11,10 +13,13 @@ namespace EcommerceApi.Controllers;
 public class CustomerOrdersController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly IRabbitMQService _rabbitMQService;
 
-    public CustomerOrdersController(ApplicationDbContext context)
+    public CustomerOrdersController(ApplicationDbContext context
+        , IRabbitMQService rabbitMQService)
     {
         _context = context;
+        _rabbitMQService = rabbitMQService;
     }
 
     // GET: api/customerorders
@@ -123,6 +128,30 @@ public class CustomerOrdersController : ControllerBase
 
         _context.CustomerOrders.Add(customerOrder);
         await _context.SaveChangesAsync();
+
+        // Send email notification
+        var emailNotification = new NotificationDto																				
+        {
+            Type = "email",
+            Recipient = "customer@example.com", // Replace with actual customer email
+            Subject = $"Order Confirmation - Order #{customerOrder.Id}",
+            Content = $"Thank you for your order! Your order #{customerOrder.Id} has been received and is being processed.",
+            OrderId = customerOrder.Id,
+            Timestamp = DateTime.UtcNow
+        };
+        _rabbitMQService.SendNotification(emailNotification);
+
+        // Send SMS notification
+        var smsNotification = new NotificationDto
+        {
+            Type = "sms",
+            Recipient = "+1234567890", // Replace with actual customer phone
+            Subject = "Order Confirmation",
+            Content = $"Your order #{customerOrder.Id} has been received. Thank you for shopping with us!",
+            OrderId = customerOrder.Id,
+            Timestamp = DateTime.UtcNow																			  
+        };
+         _rabbitMQService.SendNotification(smsNotification);
 
         var createdOrder = new CustomerOrderDto
         {

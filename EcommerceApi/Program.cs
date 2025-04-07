@@ -72,6 +72,8 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 
 // Add Redis Cache Service
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+builder.Services.AddSingleton<IRabbitMQService, RabbitMQService>();
+builder.Services.AddHostedService<NotificationConsumerService>();
 
 var app = builder.Build();
 
